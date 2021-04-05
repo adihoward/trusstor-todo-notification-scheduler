@@ -26,7 +26,7 @@ export class TaskConsumerService {
                 }
 
                 channel.assertQueue(this.mqQueueName, {
-                    durable: false
+                    durable: true
                 });
 
                 channel.consume(this.mqQueueName, (msg) => {

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node built/index.js",
     "start:watch": "nodemon",
-    "prestart": "tsc",
+    "build": "tsc",
+    "prestart": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
