@@ -1,5 +1,6 @@
 import amqp from 'amqplib/callback_api';
 import { IScheduler } from '../interfaces/iScheduler.interface';
+import { MQMessage } from '../types/mqMessage.type';
 import { Todo } from '../types/todo.type';
 
 export class TaskConsumerService {
@@ -29,10 +30,22 @@ export class TaskConsumerService {
                 });
 
                 channel.consume(this.mqQueueName, (msg) => {
-                    //need to validate data
-                    const todo: Todo = JSON.parse(msg.content.toString());
+                    const mqMessage: MQMessage = JSON.parse(msg.content.toString());
 
-                    this.schedulerService.scheduleNewTask(todo);
+                    switch (mqMessage.action) {
+                        case "cancel":
+                            this.schedulerService.cancelTask(mqMessage.todo._id);
+                            break;
+                        case "edit":
+                            this.schedulerService.editExistingTask(mqMessage.todo);
+                            break;
+                        case "new":
+                            this.schedulerService.scheduleNewTask(mqMessage.todo);
+                            break;
+
+                        default:
+                            break;
+                    }
                 }, {
                     noAck: true
                 });

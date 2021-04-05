@@ -17,10 +17,6 @@ export class SchedulerService implements IScheduler {
         return new Promise<void>((resolve, reject) => {
             this.agenda.on('ready', async () => {
                 try {
-                    await this.agenda.define("Notify user", (job) => {
-                        this.sendNotification(job.attrs.data);
-                    });
-
                     await this.agenda.start();
 
                     resolve();
@@ -32,12 +28,21 @@ export class SchedulerService implements IScheduler {
 
     }
 
-    scheduleNewTask = (todo: Todo) => {
-        this.agenda.schedule(todo.deadlineDate, "Notify user", { todo: todo });
+    scheduleNewTask = async (todo: Todo) => {
+        await this.agenda.define(todo._id, (job) => {
+            this.sendNotification(job.attrs.data);
+        });
+
+        this.agenda.schedule(todo.deadlineDate, todo._id, { todo: todo });
     }
 
-    editExistingTask = () => {
+    cancelTask = async (todoId: string) => {
+        return this.agenda.cancel({ name: todoId });
+    }
 
+    editExistingTask = async (todo: Todo) => {
+        await this.cancelTask(todo._id);
+        this.scheduleNewTask(todo);
     }
 
     sendNotification = async (data: NotificationData) => {
