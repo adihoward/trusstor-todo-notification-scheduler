@@ -1,12 +1,12 @@
 import Agenda from "agenda";
-import { IScheduler } from "../interfaces/iScheduler.interface";
+import { MQMessage } from "../types/mqMessage.type";
 import { Todo } from "../types/todo.type";
 
 interface NotificationData {
     todo: Todo;
 }
 
-export class SchedulerService implements IScheduler {
+export class SchedulerService {
     private agenda: Agenda;
 
     constructor(mongoConnectionString: string, mongoNotificationCollectionName: string) {
@@ -18,7 +18,7 @@ export class SchedulerService implements IScheduler {
             this.agenda.on('ready', async () => {
                 try {
                     await this.agenda.start();
-
+                    console.log('Scheduler ready');
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -47,5 +47,24 @@ export class SchedulerService implements IScheduler {
 
     sendNotification = async (data: NotificationData) => {
         console.log(`Task: ${data.todo.description} reached deadline`);
+    }
+
+    consumeNewTask = (msg) => {
+        const mqMessage: MQMessage = JSON.parse(msg.content.toString());
+
+        switch (mqMessage.action) {
+            case "cancel":
+                this.cancelTask(mqMessage.todo._id);
+                break;
+            case "edit":
+                this.editExistingTask(mqMessage.todo);
+                break;
+            case "new":
+                this.scheduleNewTask(mqMessage.todo);
+                break;
+
+            default:
+                break;
+        }
     }
 }

@@ -1,12 +1,15 @@
 import { config } from 'dotenv';
 config();
-
 import { initializeServices } from './services';
 
-try {
-    initializeServices()
-} catch (err) {
-    console.error(err);
+const main = async () => {
+     await initializeServices();
 }
+
+main().catch(err => {
+    console.error(err.stack);
+    throw err;
+});
+
 
 

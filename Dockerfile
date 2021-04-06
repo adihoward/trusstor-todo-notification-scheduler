@@ -2,6 +2,8 @@ FROM node:current-slim
 
 WORKDIR /app
 
+COPY .env .
+
 COPY package.json .
 
 COPY tsconfig.json .
